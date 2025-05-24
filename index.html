@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ניתוח ביצועים: עירוני טבריה מול ממוצע הליגה</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- 
+        Narrative Plan Summary:
+        1.  Title and Brief Introduction: Importance of detailed distance metrics.
+        2.  Overall Total Distance: Comparison with league average.
+        3.  Deep Dive into Intensity Zones:
+            - Low Intensity (0-1 km/h, 1-6 km/h): Bar charts showing significant deviation.
+            - Medium Intensity (6-15 km/h, 15-20 km/h): Bar charts showing deficits.
+            - High Intensity (>15 km/h, 20-25 km/h, >25 km/h): Bar charts for high-impact actions.
+        4.  Overall Intensity Profile: Radar chart comparing percentage distribution across zones.
+        5.  Key Implications: Textual summary of tactical and fitness consequences.
+        6.  League Intensity Ranking: New section with a table ranking teams by high-intensity distance percentage.
+        7.  Brief Conclusion.
+    -->
+    <!-- 
+        Visualization Choices Summary:
+        - Total Distance: Bar chart (Chart.js). Goal: Compare. Justification: Clear comparison of two values. No SVG.
+        - Distance 0-1 km/h: Bar chart (Chart.js). Goal: Compare. Justification: Highlight dramatic difference. No SVG.
+        - Distance 1-6 km/h: Bar chart (Chart.js). Goal: Compare. Justification: Standard comparison. No SVG.
+        - Distance 6-15 km/h: Bar chart (Chart.js). Goal: Compare. Justification: Standard comparison. No SVG.
+        - Distance 15-20 km/h: Bar chart (Chart.js). Goal: Compare. Justification: Standard comparison. No SVG.
+        - Distance >15 km/h (Total High Intensity): Bar chart (Chart.js). Goal: Compare. Justification: Key performance indicator. No SVG.
+        - Distance 20-25 km/h: Bar chart (Chart.js). Goal: Compare. Justification: Standard comparison. No SVG.
+        - Distance >25 km/h (Sprints): Bar chart (Chart.js). Goal: Compare. Justification: Critical sprint actions. No SVG.
+        - Overall Intensity Profile (Percentage distribution): Radar chart (Chart.js). Goal: Compare profiles. Justification: Visualizes overall pattern differences effectively. No SVG.
+        - League Intensity Table: HTML Table with calculated intensity index. Goal: Organize/Rank. Justification: Clear ranking of teams. No SVG.
+        - Textual explanations accompany all charts and tables.
+    -->
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+        }
+        .chart-container {
+            position: relative;
+            margin-left: auto;
+            margin-right: auto;
+            width: 100%;
+        }
+        .section-title {
+            @apply text-2xl font-bold mb-3 text-blue-700;
+        }
+        .card {
+            @apply bg-white rounded-xl shadow-lg p-4 sm:p-6 mb-6;
+        }
+        .stat-value {
+            @apply text-3xl font-bold;
+        }
+        .stat-label {
+            @apply text-sm text-slate-600;
+        }
+        .comparison-arrow {
+            @apply mx-2 text-2xl;
+        }
+        .positive-change {
+            @apply text-green-500;
+        }
+        .negative-change {
+            @apply text-red-500;
+        }
+        .highlight-orange {
+            color: #F97316;
+        }
+        .highlight-blue {
+            color: #0A3A67;
+        }
+        .highlight-turquoise {
+            color: #4FD1C5;
+        }
+         /* Chart.js tooltip fix for RTL */
+        .chartjs-tooltip {
+            direction: rtl;
+            text-align: right;
+        }
+        .table-header {
+            @apply bg-blue-700 text-white p-2 text-right;
+        }
+        .table-cell {
+            @apply p-2 border-b border-slate-200 text-right;
+        }
+        .table-row-tiberias {
+            @apply bg-blue-50 text-blue-900 font-semibold;
+        }
+        .table-row-league-average {
+            @apply bg-turquoise-100 text-turquoise-900 font-semibold; /* New style for league average row */
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+    <header class="bg-gradient-to-r from-blue-700 to-blue-900 text-white p-6 shadow-md sticky top-0 z-50">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-xl sm:text-3xl font-bold">ניתוח ביצועים פיזיים: עירוני טבריה</h1>
+            <div class="text-sm">בהשוואה לממוצע הליגה</div>
+        </div>
+    </header>
+
+    <main class="container mx-auto p-4 md:p-6">
+
+        <section id="intro" class="mb-8 card">
+            <h2 class="section-title">מבט מעמיק על נתוני הריצה</h2>
+            <p class="text-slate-700 leading-relaxed">
+                בכדורגל המודרני, ניתוח התפוקה הפיזית של קבוצה חורג מעבר למדידת המרחק הכולל. התפלגות המאמצים על פני אזורי עצימות שונים חושפת תובנות קריטיות לגבי סגנון המשחק, היכולות הפיזיות והגישה הטקטית. אינפוגרפיקה זו מציגה השוואה מפורטת של מדדי המרחק של עירוני טבריה אל מול ממוצע הליגה, ומדגישה ממצאים מרכזיים והשלכות אפשריות.
+            </p>
+            <p class="mt-3 text-slate-700 leading-relaxed font-semibold">
+                ממצא מרכזי: עירוני טבריה מציגה פרופיל פיזי ייחודי - כיסוי מרחק גבוה משמעותית בעצימות נמוכה מאוד (עמידה/הליכה), ובמקביל כיסוי מרחק נמוך יותר במאמצים בעצימות גבוהה וספרינטים, בהשוואה לממוצע הליגה.
+            </p>
+        </section>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            
+            <div class="card lg:col-span-1">
+                <h3 class="text-xl font-semibold mb-3 text-center text-blue-700">סה"כ מרחק מכוסה</h3>
+                <div class="chart-container h-64 md:h-72">
+                    <canvas id="totalDistanceChart"></canvas>
+                </div>
+                <p class="mt-4 text-sm text-slate-600 text-center">עירוני טבריה מכסה מרחק נמוך במעט מממוצע הליגה. עם זאת, הסיפור המלא טמון באופן בו מרחק זה מתחלק.</p>
+            </div>
+
+            <div class="card lg:col-span-2">
+                <h3 class="text-xl font-semibold mb-3 text-center text-blue-700">מרחק בעצימות נמוכה מאוד (0-1 קמ"ש)</h3>
+                <div class="chart-container h-64 md:h-72">
+                    <canvas id="lowIntensity01Chart"></canvas>
+                </div>
+                <p class="mt-4 text-sm text-slate-600 text-center">
+                    <span class="font-bold highlight-orange">הסטייה המשמעותית ביותר:</span>
+                    שחקני עירוני טבריה מבלים זמן רב יותר באופן ניכר בעמידה או בהליכה איטית מאוד. הדבר עשוי להצביע על גישה טקטית שמרנית, שמירה על מבנה הגנתי סטטי, או ניהול אנרגיה.
+                </p>
+            </div>
+            
+            <div class="card">
+                <h3 class="text-xl font-semibold mb-3 text-center text-blue-700">מרחק בעצימות נמוכה (1-6 קמ"ש)</h3>
+                <div class="chart-container h-56 md:h-64">
+                    <canvas id="lowIntensity16Chart"></canvas>
+                </div>
+                <p class="mt-4 text-sm text-slate-600 text-center">כיסוי מרחק מעט גבוה יותר בהליכה וריצה קלה, התואם את המגמה הכללית של יותר פעילות בעצימות נמוכה.</p>
+            </div>
+
+            <div class="card">
+                <h3 class="text-xl font-semibold mb-3 text-center text-blue-700">מרחק בעצימות בינונית (6-15 קמ"ש)</h3>
+                 <div class="chart-container h-56 md:h-64">
+                    <canvas id="mediumIntensity615Chart"></canvas>
+                </div>
+                <p class="mt-4 text-sm text-slate-600 text-center">פחות מרחק באזור זה, המהווה את "חדר המכונות" של הקבוצה וכולל תנועה טקטית ותמיכה.</p>
+            </div>
+
+            <div class="card">
+                <h3 class="text-xl font-semibold mb-3 text-center text-blue-700">מרחק בעצימות בינונית-גבוהה (15-20 קמ"ש)</h3>
+                <div class="chart-container h-56 md:h-64">
+                    <canvas id="mediumHighIntensity1520Chart"></canvas>
+                </div>
+                <p class="mt-4 text-sm text-slate-600 text-center">גרעון בולט יותר כאן, המשפיע על היכולת לכסות שטחים במהירות במעברים או לשמור על לחץ.</p>
+            </div>
+        </div>
+
+        <section id="highIntensity" class="mt-8">
+            <h2 class="section-title text-center mb-6">מאמצים בעצימות גבוהה: הרגעים המכריעים</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="card">
+                    <h3 class="text-lg font-semibold mb-3 text-center text-blue-700">סה"כ מרחק מעל 15 קמ"ש</h3>
+                    <div class="chart-container h-56">
+                        <canvas id="totalHighIntensityChart"></canvas>
+                    </div>
+                    <p class="mt-3 text-sm text-slate-600 text-center">פחות ריצה כוללת בעצימות גבוהה, מה שעלול להגביל יצירת מצבים והתאוששות הגנתית.</p>
+                </div>
+                <div class="card">
+                    <h3 class="text-lg font-semibold mb-3 text-center text-blue-700">מרחק במהירות גבוהה (20-25 קמ"ש)</h3>
+                     <div class="chart-container h-56">
+                        <canvas id="highSpeed2025Chart"></canvas>
+                    </div>
+                    <p class="mt-3 text-sm text-slate-600 text-center">הגרעון הגדול ביותר באחוזים באזורי העצימות הגבוהה, קריטי לפריצות התקפיות.</p>
+                </div>
+                <div class="card">
+                    <h3 class="text-lg font-semibold mb-3 text-center text-blue-700">מרחק ספרינטים (>25 קמ"ש)</h3>
+                    <div class="chart-container h-56">
+                        <canvas id="sprintDistanceChart"></canvas>
+                    </div>
+                    <p class="mt-3 text-sm text-slate-600 text-center">פחות מאמצי ספרינט מקסימליים, החיוניים לפעולות מתפרצות.</p>
+                </div>
+            </div>
+        </section>
+        
+        <section id="profile" class="mt-8 card">
+            <h2 class="section-title text-center">פרופיל העצימות הכולל של עירוני טבריה</h2>
+            <p class="text-center text-slate-600 mb-6">תרשים המכ"ם מציג את התפלגות אחוז המרחק הכולל בכל אזור מהירות, עבור עירוני טבריה (בכחול) וממוצע הליגה (בטורקיז). הוא מדגיש חזותית את הפרופיל הייחודי של הקבוצה.</p>
+            <div class="chart-container mx-auto max-w-xl h-[350px] sm:h-[450px]">
+                <canvas id="intensityProfileRadarChart"></canvas>
+            </div>
+            <p class="mt-6 text-sm text-slate-700 leading-relaxed">
+                ניתן לראות בבירור כיצד עירוני טבריה חורגת מממוצע הליגה באזור הנמוך ביותר (0-1 קמ"ש), בעוד שברוב אזורי העצימות הגבוהים יותר, הפרופיל שלה נמוך מממוצע הליגה.
+            </p>
+        </section>
+
+        <section id="implications" class="mt-8 card">
+            <h2 class="section-title">השלכות אפשריות</h2>
+            <div class="space-y-4 text-slate-700">
+                <div class="flex items-start">
+                    <span class="text-2xl mr-3 text-blue-600">🛡️</span>
+                    <div>
+                        <h4 class="font-semibold">טקטיקה הגנתית ושליטה בקצב:</h4>
+                        <p>הדגש על עצימות נמוכה עשוי לשקף גישה טקטית של גוש הגנתי נמוך וקומפקטי, המעדיף שמירה על מיקום על פני לחץ גבוה. עם זאת, הדבר עלול להקשות על הקבוצה להכתיב את קצב המשחק או להגיב במהירות למעברים.</p>
+                    </div>
+                </div>
+                <div class="flex items-start">
+                    <span class="text-2xl mr-3 text-orange-500">⚡</span>
+                    <div>
+                        <h4 class="font-semibold">יצירת מצבים התקפיים:</h4>
+                        <p>המיעוט בריצות בעצימות גבוהה וספרינטים עלול להגביל את יכולת הקבוצה ליצור מצבי הבקעה באמצעות פריצות מהירות, חדירה מאחורי קו ההגנה, או לחץ יעיל בחלק המגרש של היריב.</p>
+                    </div>
+                </div>
+                <div class="flex items-start">
+                    <span class="text-2xl mr-3 text-red-500">📉</span>
+                    <div>
+                        <h4 class="font-semibold">כושר גופני ויכולת התאוששות:</h4>
+                        <p>הפרופיל מעלה שאלות לגבי רמות הכושר הגופני הקשורות למאמצים עצימים ויכולת החזרה על מאמצים אלו. ייתכן שהגישה הטקטית מותאמת למגבלות פיזיות או מהווה אסטרטגיה לניהול עומסים.</p>
+                    </div>
+                </div>
+                 <div class="flex items-start">
+                    <span class="text-2xl mr-3 text-teal-500">🧩</span>
+                    <div>
+                        <h4 class="font-semibold">דילמת "כושר מול טקטיקה":</h4>
+                        <p>השאלה המרכזית היא האם פרופיל פיזי זה הוא בחירה טקטית מכוונת או תוצאה של מגבלות פיזיות. הבנה זו קריטית לתכנון אימונים, התאמות טקטיות ואסטרטגיית סגל עתידית.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="leagueRanking" class="mt-8 card">
+            <h2 class="section-title text-center">דירוג הליגה לפי מדד האינטנסיביות</h2>
+            <p class="text-center text-slate-600 mb-6">טבלה זו מציגה דירוג של קבוצות הליגה לפי "מדד האינטנסיביות" שלהן, המחושב כאחוז המרחק הכולל שקבוצה מכסה במהירות גבוהה (מעל 15 קמ"ש). ככל שהאחוז גבוה יותר, כך הקבוצה נחשבת ל"אינטנסיבית" יותר מבחינת תפוקה פיזית.</p>
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white rounded-lg shadow-md">
+                    <thead>
+                        <tr>
+                            <th class="table-header rounded-tr-xl">דירוג</th>
+                            <th class="table-header">קבוצה</th>
+                            <th class="table-header">סה"כ מרחק (ק"מ)</th>
+                            <th class="table-header">מרחק >15 קמ"ש (ק"מ)</th>
+                            <th class="table-header rounded-tl-xl">אחוז מרחק >15 קמ"ש (%)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leagueTableBody">
+                        </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="conclusion" class="mt-8 card bg-gradient-to-r from-slate-700 to-slate-900 text-white">
+            <h2 class="text-2xl font-bold mb-3 text-center">סיכום ומבט קדימה</h2>
+            <p class="leading-relaxed text-center">
+                הנתונים מראים בבירור שעירוני טבריה פועלת בפרופיל עצימות שונה מממוצע הליגה, עם דגש על פעילות נמוכה ופחות מאמצים אינטנסיביים. הבנת הסיבות מאחורי פרופיל זה – בין אם טקטיות, פיזיות או שילוב של השתיים – היא צעד חיוני עבור צוות האימון וההנהלה בדרך לאופטימיזציה של ביצועי הקבוצה ושאיפה ליתרון תחרותי.
+            </p>
+        </section>
+    </main>
+
+    <footer class="text-center p-6 text-slate-600 text-sm border-t border-slate-200">
+        <p>&copy; 2024 ניתוח נתונים. כל הזכויות שמורות.</p>
+        <p>אינפוגרפיקה זו נוצרה לצורך הדגמה וניתוח מקצועי.</p>
+    </footer>
+
+<script>
+const tiberiasColor = '#0A3A67'; // כחול נייבי עמוק
+const leagueAvgColor = '#4FD1C5'; // טורקיז בהיר
+const positiveDiffColor = '#F97316'; // כתום להדגשה חיובית/סטייה גדולה
+
+const tooltipTitleCallback = (tooltipItems) => {
+    const item = tooltipItems[0];
+    let label = item.chart.data.labels[item.dataIndex];
+    if (Array.isArray(label)) {
+        return label.join(' ');
+    }
+    return label;
+};
+
+const commonChartOptions = (titleText) => ({
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+        legend: {
+            position: 'top',
+            labels: {
+                font: { size: 12, family: 'Arial' },
+                color: '#334155' // slate-700
+            }
+        },
+        title: {
+            display: false, // Title is in HTML card
+            text: titleText,
+            font: { size: 16, family: 'Arial', weight: 'bold' },
+            color: '#0A3A67' // כחול נייבי עמוק
+        },
+        tooltip: {
+            enabled: true,
+            mode: 'index',
+            intersect: false,
+            backgroundColor: 'rgba(0,0,0,0.8)',
+            titleFont: { size: 14, family: 'Arial', weight: 'bold' },
+            bodyFont: { size: 12, family: 'Arial' },
+            footerFont: { size: 10, family: 'Arial' },
+            callbacks: {
+                title: tooltipTitleCallback
+            },
+            rtl: true, // For RTL tooltips
+            textDirection: 'rtl'
+        }
+    },
+    scales: {
+        y: {
+            beginAtZero: true,
+            ticks: {
+                color: '#475569', // slate-600
+                font: { family: 'Arial' }
+            },
+            grid: {
+                color: '#e2e8f0' // slate-200
+            },
+            title: {
+                display: true,
+                text: 'מרחק (ק"מ)',
+                color: '#334155',
+                font: { size: 12, family: 'Arial', weight: 'semibold'}
+            }
+        },
+        x: {
+            ticks: {
+                color: '#475569',
+                font: { family: 'Arial' }
+            },
+            grid: {
+                display: false
+            }
+        }
+    }
+});
+
+// Data from the report
+const data = {
+    totalDistance: { tiberias: 10124.09, league: 10389.12, diff: -2.55 },
+    dist0_1: { tiberias: 172.44, league: 95.77, diff: 80.06 },
+    dist1_6: { tiberias: 2909.03, league: 2845.19, diff: 2.24 },
+    dist6_15: { tiberias: 5148.12, league: 5310.54, diff: -3.06 },
+    dist15_20: { tiberias: 1289.87, league: 1449.57, diff: -11.02 },
+    dist_gt15: { tiberias: 1894.50, league: 2137.61, diff: -11.37 },
+    dist20_25: { tiberias: 456.79, league: 529.16, diff: -13.68 },
+    dist_gt25: { tiberias: 147.84, league: 158.88, diff: -6.95 }
+};
+
+// Chart 1: Total Distance
+new Chart(document.getElementById('totalDistanceChart'), {
+    type: 'bar',
+    data: {
+        labels: ['עירוני טבריה', 'ממוצע ליגה'],
+        datasets: [{
+            label: 'סה"כ מרחק (ק"מ)',
+            data: [data.totalDistance.tiberias, data.totalDistance.league],
+            backgroundColor: [tiberiasColor, leagueAvgColor],
+            borderColor: [tiberiasColor, leagueAvgColor],
+            borderWidth: 1,
+            barPercentage: 0.6,
+            categoryPercentage: 0.7
+        }]
+    },
+    options: commonChartOptions('סה"כ מרחק מכוסה')
+});
+
+// Chart 2: Low Intensity 0-1 km/h
+new Chart(document.getElementById('lowIntensity01Chart'), {
+    type: 'bar',
+    data: {
+        labels: ['עירוני טבריה', 'ממוצע ליגה'],
+        datasets: [{
+            label: 'מרחק 0-1 קמ"ש (ק"מ)',
+            data: [data.dist0_1.tiberias, data.dist0_1.league],
+            backgroundColor: [positiveDiffColor, leagueAvgColor], // Highlight Tiberias's higher value
+            borderColor: [positiveDiffColor, leagueAvgColor],
+            borderWidth: 1,
+            barPercentage: 0.6,
+            categoryPercentage: 0.7
+        }]
+    },
+    options: commonChartOptions('מרחק בעצימות נמוכה מאוד (0-1 קמ"ש)')
+});
+
+// Chart 3: Low Intensity 1-6 km/h
+new Chart(document.getElementById('lowIntensity16Chart'), {
+    type: 'bar',
+    data: {
+        labels: ['עירוני טבריה', 'ממוצע ליגה'],
+        datasets: [{
+            label: 'מרחק 1-6 קמ"ש (ק"מ)',
+            data: [data.dist1_6.tiberias, data.dist1_6.league],
+            backgroundColor: [tiberiasColor, leagueAvgColor],
+            borderColor: [tiberiasColor, leagueAvgColor],
+            borderWidth: 1,
+            barPercentage: 0.6,
+            categoryPercentage: 0.7
+        }]
+    },
+    options: commonChartOptions('מרחק בעצימות נמוכה (1-6 קמ"ש)')
+});
+
+// Chart 4: Medium Intensity 6-15 km/h
+new Chart(document.getElementById('mediumIntensity615Chart'), {
+    type: 'bar',
+    data: {
+        labels: ['עירוני טבריה', 'ממוצע ליגה'],
+        datasets: [{
+            label: 'מרחק 6-15 קמ"ש (ק"מ)',
+            data: [data.dist6_15.tiberias, data.dist6_15.league],
+            backgroundColor: [tiberiasColor, leagueAvgColor],
+            borderColor: [tiberiasColor, leagueAvgColor],
+            borderWidth: 1,
+            barPercentage: 0.6,
+            categoryPercentage: 0.7
+        }]
+    },
+    options: commonChartOptions('מרחק בעצימות בינונית (6-15 קמ"ש)')
+});
+
+// Chart 5: Medium-High Intensity 15-20 km/h
+new Chart(document.getElementById('mediumHighIntensity1520Chart'), {
+    type: 'bar',
+    data: {
+        labels: ['עירוני טבריה', 'ממוצע ליגה'],
+        datasets: [{
+            label: 'מרחק 15-20 קמ"ש (ק"מ)',
+            data: [data.dist15_20.tiberias, data.dist15_20.league],
+            backgroundColor: [tiberiasColor, leagueAvgColor],
+            borderColor: [tiberiasColor, leagueAvgColor],
+            borderWidth: 1,
+            barPercentage: 0.6,
+            categoryPercentage: 0.7
+        }]
+    },
+    options: commonChartOptions('מרחק בעצימות בינונית-גבוהה (15-20 קמ"ש)')
+});
+
+// Chart 6: Total High Intensity >15 km/h
+new Chart(document.getElementById('totalHighIntensityChart'), {
+    type: 'bar',
+    data: {
+        labels: ['עירוני טבריה', 'ממוצע ליגה'],
+        datasets: [{
+            label: 'סה"כ מרחק >15 קמ"ש (ק"מ)',
+            data: [data.dist_gt15.tiberias, data.dist_gt15.league],
+            backgroundColor: [tiberiasColor, leagueAvgColor],
+            borderColor: [tiberiasColor, leagueAvgColor],
+            borderWidth: 1,
+            barPercentage: 0.6,
+            categoryPercentage: 0.7
+        }]
+    },
+    options: commonChartOptions('סה"כ מרחק מעל 15 קמ"ש')
+});
+
+// Chart 7: High Speed 20-25 km/h
+new Chart(document.getElementById('highSpeed2025Chart'), {
+    type: 'bar',
+    data: {
+        labels: ['עירוני טבריה', 'ממוצע ליגה'],
+        datasets: [{
+            label: 'מרחק 20-25 קמ"ש (ק"מ)',
+            data: [data.dist20_25.tiberias, data.dist20_25.league],
+            backgroundColor: [tiberiasColor, leagueAvgColor],
+            borderColor: [tiberiasColor, leagueAvgColor],
+            borderWidth: 1,
+            barPercentage: 0.6,
+            categoryPercentage: 0.7
+        }]
+    },
+    options: commonChartOptions('מרחק במהירות גבוהה (20-25 קמ"ש)')
+});
+
+// Chart 8: Sprint Distance >25 km/h
+new Chart(document.getElementById('sprintDistanceChart'), {
+    type: 'bar',
+    data: {
+        labels: ['עירוני טבריה', 'ממוצע ליגה'],
+        datasets: [{
+            label: 'מרחק >25 קמ"ש (ק"מ)',
+            data: [data.dist_gt25.tiberias, data.dist_gt25.league],
+            backgroundColor: [tiberiasColor, leagueAvgColor],
+            borderColor: [tiberiasColor, leagueAvgColor],
+            borderWidth: 1,
+            barPercentage: 0.6,
+            categoryPercentage: 0.7
+        }]
+    },
+    options: commonChartOptions('מרחק ספרינטים (>25 קמ"ש)')
+});
+
+// Calculate percentage distribution for Radar Chart
+const tiberiasTotal = data.totalDistance.tiberias;
+const leagueTotal = data.totalDistance.league;
+
+const tiberiasProfile = [
+    (data.dist0_1.tiberias / tiberiasTotal) * 100,
+    (data.dist1_6.tiberias / tiberiasTotal) * 100,
+    (data.dist6_15.tiberias / tiberiasTotal) * 100,
+    (data.dist15_20.tiberias / tiberiasTotal) * 100,
+    (data.dist20_25.tiberias / tiberiasTotal) * 100,
+    (data.dist_gt25.tiberias / tiberiasTotal) * 100
+];
+
+const leagueProfile = [
+    (data.dist0_1.league / leagueTotal) * 100,
+    (data.dist1_6.league / leagueTotal) * 100,
+    (data.dist6_15.league / leagueTotal) * 100,
+    (data.dist15_20.league / leagueTotal) * 100,
+    (data.dist20_25.league / leagueTotal) * 100,
+    (data.dist_gt25.league / leagueTotal) * 100
+];
+
+const radarLabels = [
+    '0-1 קמ"ש', 
+    '1-6 קמ"ש', 
+    '6-15 קמ"ש', 
+    '15-20 קמ"ש', 
+    '20-25 קמ"ש', 
+    '>25 קמ"ש'
+];
+
+// Chart 9: Intensity Profile Radar Chart
+new Chart(document.getElementById('intensityProfileRadarChart'), {
+    type: 'radar',
+    data: {
+        labels: radarLabels,
+        datasets: [
+            {
+                label: 'עירוני טבריה (% מהמרחק הכולל)',
+                data: tiberiasProfile,
+                fill: true,
+                backgroundColor: 'rgba(10, 58, 103, 0.2)', // tiberiasColor with alpha
+                borderColor: tiberiasColor,
+                pointBackgroundColor: tiberiasColor,
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: tiberiasColor
+            },
+            {
+                label: 'ממוצע ליגה (% מהמרחק הכולל)',
+                data: leagueProfile,
+                fill: true,
+                backgroundColor: 'rgba(79, 209, 197, 0.2)', // leagueAvgColor with alpha
+                borderColor: leagueAvgColor,
+                pointBackgroundColor: leagueAvgColor,
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: leagueAvgColor
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        elements: {
+            line: {
+                borderWidth: 2
+            }
+        },
+        plugins: {
+            legend: {
+                position: 'bottom',
+                 labels: {
+                    font: { size: 11, family: 'Arial' },
+                    color: '#334155',
+                    padding: 15
+                }
+            },
+            title: {
+                display: false // Title is in HTML
+            },
+            tooltip: {
+                enabled: true,
+                callbacks: {
+                    label: function(context) {
+                        let label = context.dataset.label || '';
+                        if (label) {
+                            label += ': ';
+                        }
+                        if (context.parsed.r !== null) {
+                            label += context.parsed.r.toFixed(2) + '%';
+                        }
+                        return label;
+                    }
+                },
+                rtl: true,
+                textDirection: 'rtl'
+            }
+        },
+        scales: {
+            r: {
+                angleLines: { display: true, color: '#cbd5e1' }, // slate-300
+                grid: { color: '#e2e8f0' }, // slate-200
+                pointLabels: {
+                    font: {
+                        size: 10,
+                        family: 'Arial'
+                    },
+                    color: '#475569' // slate-600
+                },
+                ticks: {
+                    backdropColor: 'rgba(255,255,255,0.75)', // semi-transparent white
+                    color: '#334155', // slate-700
+                    font: {size: 9, family: 'Arial'},
+                    stepSize: Math.ceil(Math.max(...tiberiasProfile, ...leagueProfile) / 5) // Dynamic step size
+                },
+                 suggestedMin: 0,
+                 suggestedMax: Math.ceil(Math.max(...tiberiasProfile, ...leagueProfile) / 10) * 10 + 5 // Dynamic max
+            }
+        }
+    }
+});
+
+// League ranking data (from provided image)
+const leagueTeamsData = [
+    { name: 'League Average', totalDistance: 10389.12, dist_gt15: 2137.61 },
+    { name: 'IPFL-Bnei Sakhnin', totalDistance: 10426.34, dist_gt15: 2083.71 },
+    { name: 'IPFL-Hapoel Beer Sheva', totalDistance: 10537.54, dist_gt15: 2402.4 },
+    { name: 'IPFL-Hapoel Hadera', totalDistance: 10302.81, dist_gt15: 2005.2 },
+    { name: 'IPFL-Hapoel Haifa', totalDistance: 10334.57, dist_gt15: 2060.24 },
+    { name: 'IPFL-Hapoel Katamon Jerusalem', totalDistance: 10473.64, dist_gt15: 2179.82 },
+    { name: 'IPFL-Maccabi Bnei Reina', totalDistance: 10422.77, dist_gt15: 2095.17 },
+    { name: 'IPFL-Maccabi Haifa', totalDistance: 10211.69, dist_gt15: 2081.8 },
+    { name: 'IPFL-Maccabi Netanya', totalDistance: 10718.35, dist_gt15: 2251.94 },
+    { name: 'IPFL-Maccabi Petach Tikva', totalDistance: 10669.88, dist_gt15: 2265.54 },
+    { name: 'IPFL - Maccabi Tel Aviv', totalDistance: 10600.68, dist_gt15: 2306.02 },
+    { name: 'IPFL-SC Ashdod', totalDistance: 10314.34, dist_gt15: 2148.22 },
+    { name: 'IPFL-Beitar Jerusalem', totalDistance: 10088.63, dist_gt15: 2179.62 },
+    { name: 'IPFL-Ironi Tiberias', totalDistance: 10124.09, dist_gt15: 1894.5 },
+    { name: 'IPFL-Kiryat Shmona', totalDistance: 10222.32, dist_gt15: 1972.34 }
+];
+
+// Calculate intensity index and sort
+const rankedTeams = leagueTeamsData.map(team => ({
+    ...team,
+    intensityIndex: (team.dist_gt15 / team.totalDistance) * 100
+})).sort((a, b) => b.intensityIndex - a.intensityIndex);
+
+// Populate the league table
+const leagueTableBody = document.getElementById('leagueTableBody');
+rankedTeams.forEach((team, index) => {
+    const row = document.createElement('tr');
+    let rowClass = 'border-b border-slate-200';
+    if (team.name === 'IPFL-Ironi Tiberias') {
+        rowClass += ' table-row-tiberias';
+    } else if (team.name === 'League Average') {
+        rowClass += ' table-row-league-average';
+    }
+    row.className = rowClass;
+
+    row.innerHTML = `
+        <td class="table-cell">${index + 1}</td>
+        <td class="table-cell">${team.name.replace('IPFL-', '')}</td>
+        <td class="table-cell">${team.totalDistance.toFixed(2)}</td>
+        <td class="table-cell">${team.dist_gt15.toFixed(2)}</td>
+        <td class="table-cell">${team.intensityIndex.toFixed(2)}%</td>
+    `;
+    leagueTableBody.appendChild(row);
+});
+
+</script>
+</body>
+</html>
